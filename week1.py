@@ -13,10 +13,11 @@ counter = 0
 actions = ['R', 'P', 'S']
 playermoves = [0, 0, 0]
 computermoves = [0, 0, 0]
-moves = [False, False, False]
 previous = None
 previndex = None
 winner = None
+playerwin = 0
+computerwin = 0
 
 
 def pushstat(opt, col1, col2, col3):
@@ -29,24 +30,24 @@ pushstat('w', 'PLAYER', 'COMPUTER', 'WINNER')
 
 
 def getstat():
-    global counter, playermoves, computermoves
-    pmoves, cmoves = [0, 0, 0], [0, 0, 0]
+    global counter, playermoves, computermoves, playerwin, computerwin
+    moves = ["", "", ""]
+    c = counter / 100
     for i in range(len(actions)):
-        pmoves[i] = str(playermoves[i] / counter * 100) + "%"
-        cmoves[i] = str(computermoves[i] / counter * 100) + "%"
-    status = "{0:^20}{1:^20}\n{2:^20}{5:^20}\n{3:^20}{6:^20}\n{4:^20}{7:^20}".format("Player moves", "Computer moves",
-                                                                                     *pmoves, *cmoves)
+        moves[i] = "{0:<3}{1:>5}{2:>2}{4:^10}{0:<3}{3:>5}{2:>2}".format(actions[i], (playermoves[i]/c), "%", (computermoves[i]/c), " ")
+    status = "{0:<20}{1:<20}\n {2}\n {3}\n {4}".format("Player moves", "Computer moves", *moves)
+    print("\n")
     print(status)
-    print("\n\n")
+    print("\n")
     with open('stats.txt') as stats:
         stat = stats.read()
     print(stat)
-
-
+    print("Player won", playerwin, "times")
+    print("Computer won", computerwin, "times")
 
 def checkstatus(playeract, computeract):
 
-    global winner, previous, counter
+    global winner, previous, counter, computerwin, playerwin
 
     if playeract == 'R':
         if computeract == 'R':
@@ -55,25 +56,30 @@ def checkstatus(playeract, computeract):
         elif computeract == 'P':
             previous = 'w'
             winner = 'computer'
+            computerwin += 1
         else:
             previous = 'l'
             winner = 'player'
+            playerwin += 1
 
     elif playeract == 'P':
         if computeract == 'R':
             previous = 'l'
             winner = 'player'
+            playerwin += 1
         elif computeract == 'P':
             previous = 't'
             winner = '-'
         else:
             previous = 'w'
             winner = 'computer'
+            computerwin += 1
 
     else:
         if computeract == 'R':
             previous = 'w'
             winner = 'computer'
+            computerwin += 1
         elif computeract == 'P':
             previous = 'l'
             winner = 'player'
@@ -83,31 +89,27 @@ def checkstatus(playeract, computeract):
     counter += 1
     pushstat('a', playeract, computeract, winner)
 
-#def start():
-    # loop()
+
+def start(test=False, n=None):
+    for i in range(n):
+        loop(test)
 
 
-def loop():
-    playeract = playeraction()
+def loop(test):
+
+    playeract = playeraction(test)
     computeract = computeraction()
     checkstatus(playeract, computeract)
 
-# victory condition check
-    # increment match counter
 
+def playeraction(test=False):
 
-#def test():
-    # initialize the counter
-    # set list of actions
-    # loop(10000)
-    # stats
-
-
-
-def playeraction():
     while True:
         try:
-            playeract = input("Make your move:\n[R]-[P]-[S]\n")
+            if test:
+                playeract = random.choice(actions)
+            else:
+                playeract = input("Make your move:\n[R]-[P]-[S]\n")
             global playermoves
             playermoves[actions.index(playeract)] += 1
             break
@@ -132,7 +134,7 @@ def computeraction():
     return compact
 
 
+if __name__ == '__main__':
 
-for i in range(5):
-    loop()
-getstat()
+    start(False, 5)
+    getstat()
