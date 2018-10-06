@@ -54,10 +54,10 @@ def loop(current: State, visited: list):
     for c in range(3):
         for m in range(3):
             boat = [c, m]
-            if 0 < c + m <= 2:
-                next_state = current.action(boat)
-                if next_state.isValid():
-                    if next_state.state not in visited:
+            if 0 < c + m <= 2:  # at least one, at most two person(s) should be on the boat
+                next_state = current.action(boat) # creates a new state with
+                if next_state.isValid():    # check if the state is valid (both sides of the river should follow the rules)
+                    if next_state.state not in visited: # if state has never been visited
                         visited.append(next_state.state)
                         current.children.append(next_state)
                         next_state.parent = current
