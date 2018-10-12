@@ -8,6 +8,9 @@
 
 import random
 
+counter = 0
+actions = ['R', 'P', 'S']
+
 
 class Player:
     id = 0
@@ -47,8 +50,8 @@ class Computer(Player):
     def __init__(self):
         super().__init__()
         self.name = "Computer"
-        self.previndex: int
-        self.action: str
+        self.previndex: int = None
+        self.action: str = None
         self.id = Computer.id
         if self.id != 0:
             self.name += str(self.id)
@@ -67,31 +70,35 @@ class Computer(Player):
         self.action = act
 
 
-counter = 0
-actions = ['R', 'P', 'S']
 winner: Player = None
 
 
-def pushstat(opt: str, col1: str, col2: str, col3: str):
-    with open('stats.txt', opt) as stats:
-        line = "{0:^10}{1:^10}{2:^10}\n".format(col1, col2, col3)
-        stats.write(line)
-
-
 def getstat(player1: Player, player2: Player):
-    moves = ["", "", ""]
     c = counter / 100
-    for i in range(len(actions)):
-        moves[i] = "{0:<3}{1:>5}{2:>2}{4:^10}{0:<3}{3:>5}{2:>2}".format(actions[i], (player1.movecount[i]/c), "%", (player2.movecount[i]/c), " ")
-    status = "{0:<20}{1:<20}\n {2}\n {3}\n {4}".format(player1.name + "moves", player2.name + "moves", *moves)
-    print("\n")
-    print(status)
-    print("\n")
     with open('stats.txt') as stats:
         stat = stats.read()
-    print(stat)
-    print(player1.name, "won", player1.wincount, "times")
-    print(player2.name, "won", player2.wincount, "times")
+    with open('stats.txt', 'w') as stats:
+        moves = ["", "", ""]
+        for i in range(len(actions)):
+            moves[i] = "{0:<3}{1:>5}{2:>2}{4:^10}{0:<3}{3:>5}{2:>2}".format(actions[i], round(player1.movecount[i] / c, 2), "%",
+                                                                            round(player2.movecount[i] / c, 2), " ")
+        status = "{0:<20}{1:<20}\n {2}\n {3}\n {4}".format(player1.name + " moves", player2.name + " moves", *moves)
+        stats.write("\n" + status + "\n\n")
+
+    with open('stats.txt', 'a') as stats:
+        stats.write("\n" + stat + "\n\n")
+        line = "%s won %d times (%.2f %%)\n" % (player1.name, player1.wincount, (player1.wincount / c))
+        stats.write(line)
+        line = "%s won %d times (%.2f %%)\n" % (player2.name, player2.wincount, (player2.wincount / c))
+        stats.write(line)
+        tie = counter - player1.wincount - player2.wincount
+        line = "The game ended in a tie %d times (%.2f %%)\n" % (tie, (tie / c))
+        stats.write(line)
+
+    with open('stats.txt') as stats:
+        stats = stats.read()
+        print(stats)
+
 
 
 def checkstatus(player1: Player, player2: Player):
@@ -160,28 +167,39 @@ def start(rand=False, loopcount=None, aimatch=False):
     else:
         player1 = Player(rand)
     player2 = Computer()
-    pushstat('w', player1.name, player2.name, 'WINNER')
-    for i in range(loopcount):
-        loop(player1, player2)
+    with open('stats.txt', 'w') as stats:
+        head = "{0:^10}{1:^10}{2:^10}\n".format(player1.name, player2.name, 'WINNER')
+        stats.write(head)
+
+    with open('stats.txt', 'a') as stats:
+        for i in range(loopcount):
+            loop(player1, player2, stats)
+
     getstat(player1, player2)
 
 
-def loop(player1: Player, player2: Player):
+
+def loop(player1: Player, player2: Player, statfileappend):
     player1.act()
     player2.act()
     checkstatus(player1, player2)
     print(player1.name, "move:", player1.action)
     print(player2.name, "move:", player2.action)
+
     if winner:
-        pushstat('a', player1.action, player2.action, winner.name)
+        winnername = winner.name
         print("The winner is", winner.name)
     else:
-        pushstat('a', player1.action, player2.action, "-")
+        winnername = "-"
         print("It was a tie!")
+
+    line = "{0:^10}{1:^10}{2:^10}\n".format(player1.action, player2.action, winnername)
+    statfileappend.write(line)
+
 
 
 if __name__ == '__main__':
-    rand = False
-    loopcount = 100
+    rand = True
+    loopcount = 10000
 
     start(rand, loopcount, aimatch=True)
