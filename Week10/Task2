@@ -1,0 +1,6 @@
+Tic Tac Toe is a fully observable game.
+At each time step, the signs (Xs or Os) and the right to make a move defines the state.
+Possible list of actions consists of the empty squares on the board.
+The policy P: S --> A indicates the action that should be taken in a state S, to maximize the chance of winning.
+Win condition is to create a sequence of three Xs or Os in a row/column or diagonally.
+Training an RL agent to play against a random player would not be beneficial to observe a healthy learning.
